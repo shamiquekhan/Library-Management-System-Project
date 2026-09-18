@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Library Management System — Project Report — Shamique Khan (25BAI10187)</title>
+<style>
+@page { size: A4; margin: 18mm 15mm 20mm 15mm; @top-center { content: "Library Management System — Project Report | Shamique Khan (25BAI10187)"; font-size: 9pt; color: #555; } @bottom-center { content: "Page " counter(page); font-size: 9pt; color: #777; } @top-right { content: "Programming in Java — VITyarthi"; font-size: 9pt; color: #777; } }
+* { box-sizing: border-box; }
+body { font-family: "Segoe UI", Calibri, Arial, sans-serif; font-size: 10.5pt; line-height: 1.55; color: #222; }
+h2 { font-size: 14pt; color: #1a3c6e; margin-top: 22pt; border-left: 4pt solid #cba135; padding-left: 8pt; page-break-after: avoid; }
+h3 { font-size: 11.5pt; color: #333; margin-top: 14pt; text-transform: uppercase; letter-spacing: 0.3pt; border-bottom: 0.5pt solid #ccc; padding-bottom: 2pt; page-break-after: avoid; }
+.header-box { background: linear-gradient(135deg, #1a3c6e 0%, #2a5298 100%); color: #fff; padding: 22pt 14pt; border-radius: 4pt; margin-bottom: 14pt; }
+.header-box h1 { color: #fff; border-bottom: none; margin: 0 0 6pt 0; font-size: 22pt; }
+.header-box p { margin: 2pt 0; font-size: 10pt; opacity: 0.92; }
+.cover-strip { background: #f5f0e1; border-left: 4pt solid #cba135; padding: 8pt 10pt; margin: 8pt 0; }
+.table-wrap { margin: 6pt 0; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+th { background: #1a3c6e; color: #fff; text-align: left; padding: 5pt 6pt; }
+td { padding: 4pt 6pt; border-bottom: 0.5pt solid #ddd; vertical-align: top; }
+tr:nth-child(even) { background: #f7f6f0; }
+.code-block { background: #f4f4f0; border-left: 3pt solid #cba135; padding: 8pt 10pt; font-family: "Courier New", Consolas, monospace; font-size: 8.5pt; overflow-x: auto; white-space: pre-wrap; page-break-inside: avoid; }
+.note { background: #fffdf5; border-left: 3pt solid #f0c040; padding: 7pt 9pt; font-size: 9.5pt; color: #554400; }
+.section-number { display: inline-block; background: #cba135; color: #fff; width: 26pt; height: 26pt; line-height: 26pt; border-radius: 50%; text-align: center; font-weight: bold; font-size: 10pt; margin-right: 6pt; }
+ul, ol { margin: 4pt 0 4pt 16pt; padding: 0; }
+li { margin: 2pt 0; }
+p { margin: 6pt 0; }
+</style>
+</head>
+<body>
+
+<div class="header-box">
+  <h1>Library Management System — Project Report</h1>
+  <p><strong>Programming in Java (Flipped Course)</strong> &nbsp;|&nbsp; <strong>VITyarthi</strong> &nbsp;|&nbsp; Submitted: <strong>September 2026</strong></p>
+  <p><strong>Student:</strong> Shamique Khan &nbsp;•&nbsp; <strong>Reg. No.:</strong> 25BAI10187 &nbsp;•&nbsp; <strong>Programme:</strong> B.Tech — Artificial Intelligence and Machine Learning &nbsp;•&nbsp; <strong>Year:</strong> 2026–2027</p>
+</div>
+
+<div class="cover-strip">
+  <strong>Project Type:</strong> Evaluated Flipped Course Project &nbsp;|&nbsp; <strong>Domain:</strong> Library Management &nbsp;|&nbsp;
+  <strong>Repository:</strong> https://github.com/shamiquekhan/Library-Management-System &nbsp;|&nbsp; <strong>Visibility:</strong> Public
+</div>
+
+<h2><span class="section-number">2</span> Introduction</h2>
+<p>This project implements a <strong>Library Management System (LMS)</strong> as a Java desktop application developed for the <em>Programming in Java</em> flipped course. The default interface is a <strong>Java Swing GUI</strong> (light-themed dashboard with role-aware navigation); the original terminal workflow remains available via <code>--cli</code>. The system supports three user roles (Librarian, Clerk, Member), persists all data in an embedded SQLite database through JDBC, and runs two scheduled background services (overdue monitoring and automated backup) using the Concurrency APIs.</p>
+<p>Every major topic of the five course modules is applied in a real domain: Java fundamentals and file I/O, object-oriented design, a custom exception hierarchy, the Collections Framework, and JDBC transactions alongside scheduled concurrency — plus the GUI concepts of event handling, layout managers and <code>SwingWorker</code> concurrency. The application is built and launched entirely from the command line (<code>./build.sh</code>, <code>./run.sh</code>) with no external database server and no web/frontend framework, so an evaluator can build and run it immediately after cloning.</p>
+
+<h2><span class="section-number">3</span> Problem Statement</h2>
+<p>Libraries manage a continuous cycle of cataloguing, circulation and accountability: books are added and withdrawn, members join, books are issued and returned, popular titles accumulate hold queues, overdue loans attract fines, and administrators need statistics, reports and safe backups. Managing this cycle by hand is slow and error-prone: due dates are miscounted, fines are calculated inconsistently, hold queues are lost, and no audit trail exists. Spreadsheet-style records share none of the validation, transactional consistency or role-based access that a purpose-built system provides.</p>
+<p>This project delivers a digital solution that (1) automates cataloguing, membership, circulation, holds and fine calculation with enforced business rules; (2) provides role-appropriate interfaces for Librarian, Clerk and Member; (3) keeps all records durable in a relational database with transactional updates; and (4) produces reports, statistics, logs and backups without manual effort.</p>
+
+<h2><span class="section-number">4</span> Objectives</h2>
+<ul>
+<li>Apply Java syntax, control structures, strings, arrays and I/O fundamentals in a realistic domain.</li>
+<li>Design an object-oriented model using inheritance, abstraction, polymorphism, encapsulation, interfaces and enums.</li>
+<li>Implement a custom checked exception hierarchy with validation and error propagation at every layer.</li>
+<li>Use file I/O (<code>BufferedReader</code>/<code>BufferedWriter</code>, <code>PrintWriter</code>, <code>Properties</code>) for configuration, reports, logs, backup manifests and CSV import.</li>
+<li>Select and justify Collections Framework structures (List, Map, Set, Queue, Comparator) for each data-management need.</li>
+<li>Build a JDBC application over SQLite using <code>PreparedStatement</code>, generated keys and explicit transactions.</li>
+<li>Demonstrate concurrency with <code>ScheduledExecutorService</code> daemon tasks and <code>synchronized</code> service methods.</li>
+<li>Deliver a reproducible automated test suite alongside the manual test evidence.</li>
+</ul>
+
+<h2><span class="section-number">5</span> Functional Requirements</h2>
+<p>The system provides five major functional modules, exceeding the required minimum of three.</p>
+<div class="table-wrap">
+<table>
+<thead><tr><th>ID</th><th>Module</th><th>Inputs</th><th>Processing</th><th>Outputs</th></tr></thead>
+<tbody>
+<tr><td>FR-01</td><td><strong>Authentication &amp; Roles</strong></td><td>Username, password, role</td><td>Credential + role verification; password change with old-password check</td><td>Role-specific console; <code>InvalidCredentialsException</code> on failure</td></tr>
+<tr><td>FR-02</td><td><strong>Book Catalog</strong></td><td>ISBN, title, author, subject; keyword; CSV path</td><td>CRUD with duplicate-ISBN and status checks; search by title/author/subject; CSV import</td><td>Updated catalog, listings, import summary (added/skipped)</td></tr>
+<tr><td>FR-03</td><td><strong>Circulation</strong></td><td>Book ID, member ID</td><td>Issue (loan limit 3, fine/overdue gates, hold enforcement), return (fine Rs. 5/day, hold fulfilment via request-date ordered <code>PriorityQueue</code>), renew (max 2, blocked by holds/overdue), place hold (max 2 pending), collect fine</td><td>Loans with due dates, fine amounts, hold positions, payment confirmations</td></tr>
+<tr><td>FR-04</td><td><strong>Reporting &amp; Statistics</strong></td><td>Current database records</td><td>CSV/TXT export with timestamped names; per-subject aggregation in <code>TreeMap</code></td><td><code>reports/*_report_&lt;timestamp&gt;.{csv,txt}</code>, on-screen statistics</td></tr>
+<tr><td>FR-05</td><td><strong>Automated Services &amp; Administration</strong></td><td>Configured intervals; member data</td><td>Scheduled overdue scans refresh fines; scheduled file backup + manifest; member registration with uniqueness check</td><td>Updated fines, <code>backups/library-backup-&lt;timestamp&gt;.db</code> + manifest, activity log entries</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2><span class="section-number">6</span> Non-Functional Requirements</h2>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Requirement</th><th>Implementation / Evidence</th></tr></thead>
+<tbody>
+<tr><td><strong>Performance</strong></td><td>SQL indexes on <code>loan(member_id)</code> and <code>hold_request(book_id)</code>; <code>HashMap</code>/<code>TreeMap</code> aggregation; embedded SQLite with zero server overhead</td></tr>
+<tr><td><strong>Reliability</strong></td><td>JDBC transactions (commit/rollback) around issue/return; try-with-resources on every stream and connection</td></tr>
+<tr><td><strong>Security</strong></td><td>Role-separated menus; <code>PreparedStatement</code> exclusively (no SQL concatenation); plaintext passwords documented as a limitation</td></tr>
+<tr><td><strong>Usability</strong></td><td>Numbered menus, range-validated input with re-prompt, blank-keeps-current updates, consistent <code>[ok]</code>/<code>[x]</code> messages, seeded demo data on first run</td></tr>
+<tr><td><strong>Maintainability</strong></td><td>Layered packages <code>ui → service → dao</code>; cross-cutting utilities isolated in <code>lms.util</code>; each layer depends only on the layer below</td></tr>
+<tr><td><strong>Error Handling</strong></td><td>Custom checked hierarchy: <code>LMSException</code> + 10 subclasses; exception chaining via <code>initCause</code>; multi-catch in CSV import; UI prints messages without stack traces</td></tr>
+<tr><td><strong>Logging &amp; Monitoring</strong></td><td>Timestamped activity log (<code>logs/lms.log</code>) for logins, circulation, holds, fines, imports, backups and monitor scans; console echo</td></tr>
+<tr><td><strong>Resource Efficiency</strong></td><td>Both background services are daemon threads on a single-threaded <code>ScheduledExecutorService</code>; JVM exits cleanly</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2><span class="section-number">7</span> System Architecture</h2>
+<p>Three-layer architecture with cross-cutting services. Each layer communicates only with the layer beneath it: the UI catches <code>LMSException</code> and prints messages, the service layer owns all business rules, and the DAO layer owns all SQL.</p>
+<div class="code-block">Console UI (ConsoleUI, LibrarianConsole, ClerkConsole, MemberConsole)
+        ↓
+LibraryService (business rules, validation, synchronized operations)
+        ↓
+DAO layer (BookDao, PersonDao, LoanDao, HoldDao — JDBC / PreparedStatement)
+        ↓
+SQLite database (embedded file, PRAGMA foreign_keys=ON)
+
+Cross-cutting: Config, ActivityLog, ReportGenerator,
+               OverdueMonitor, BackupService, FineCalculator, DateTimeUtil</div>
+
+<h3>Package structure (41 Java source files)</h3>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Package</th><th>Files</th><th>Contents</th></tr></thead>
+<tbody>
+<tr><td><code>lms.model</code></td><td>10</td><td>Person hierarchy, Book, Loan, HoldRequest, BookStatus, Displayable</td></tr>
+<tr><td><code>lms.exception</code></td><td>11</td><td>LMSException + 10 subclasses</td></tr>
+<tr><td><code>lms.dao</code></td><td>4</td><td>BookDao, PersonDao, LoanDao, HoldDao</td></tr>
+<tr><td><code>lms.service</code></td><td>1</td><td>LibraryService</td></tr>
+<tr><td><code>lms.reports</code></td><td>1</td><td>ReportGenerator</td></tr>
+<tr><td><code>lms.concurrency</code></td><td>2</td><td>OverdueMonitor, BackupService</td></tr>
+<tr><td><code>lms.util</code></td><td>7</td><td>Console, Config, Database, DateTimeUtil, FineCalculator, ActivityLog, TablePrinter</td></tr>
+<tr><td><code>lms.ui</code></td><td>4</td><td>ConsoleUI, LibrarianConsole, ClerkConsole, MemberConsole</td></tr>
+<tr><td><code>lms</code></td><td>1</td><td>Main entry point</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2><span class="section-number">8</span> Design Diagrams</h2>
+<p>Rendered versions are maintained in <code>design/*.md</code> and <code>images/</code> in the repository; the diagrams are summarised here.</p>
+
+<h3>8.1 Use Case Diagram</h3>
+<div class="code-block">Actors: Librarian, Clerk, Member
+
+Librarian: Add/Update/Remove Book, Import CSV, Register Member,
+           View Members/Loans/Overdue, Subject Statistics,
+           Generate Reports, Backup Database, Change Password
+Clerk:     Issue Book, Return Book, Renew Loan, Collect Fine,
+           Register Member, Search/View Books, View Member Loans
+           &amp; Fines, Update Member Contact, Change Password
+Member:    Search/View Books, View My Loans, Place Hold,
+           View My Holds, View My Fines, Change Password</div>
+<p>All actors authenticate (Login). Clerk and Member share catalog search. Return Book «extends» Hold Fulfilment: when a returned book has pending holds, the earliest hold is fulfilled and the book is reserved at the desk.</p>
+
+<h3>8.2 Workflow Diagram</h3>
+<div class="code-block">Start → Login → role?
+  ├─ Librarian → manage catalog/members → reports/backup → logout
+  ├─ Clerk     → issue ⇄ return → renew → collect fine → logout
+  └─ Member    → search → place hold → view loans/fines → logout
+
+Return branch: overdue? → calculate fine → record unpaid fine
+               holds pending? → fulfil earliest hold → RESERVED
+               otherwise      → AVAILABLE</div>
+
+<h3>8.3 Sequence Diagram — Issue Book (primary flow)</h3>
+<div class="code-block">Clerk → ConsoleUI → LibraryService → BookDao/PersonDao/LoanDao/HoldDao → SQLite
+
+1. findById(book), findById(member)            — existence checks
+2. Validations: status, hold queue ownership, loan limit,
+   duplicate loan, unpaid fines, overdue loans
+3. BEGIN (setAutoCommit false)
+4. INSERT loan → UPDATE book ISSUED → [mark hold fulfilled]
+5. commit()   — on any SQLException: rollback()
+6. "[ok] Issued. Due on ..."</div>
+
+<h3>8.4 Class Diagram</h3>
+<div class="code-block">Displayable (interface)              Comparable&lt;Book&gt; / Comparable&lt;HoldRequest&gt;
+     ▲                                        ▲
+Person (abstract)                    Book   HoldRequest
+  ├── Member                          └────── Loan (Displayable)
+  └── Staff (abstract)
+        ├── Librarian (officeNo)
+        └── Clerk (deskNo)
+
+LibraryService ──uses──► BookDao, PersonDao, LoanDao, HoldDao
+ConsoleUI / *Console ──uses──► LibraryService
+BookStatus (enum): AVAILABLE | ISSUED | RESERVED</div>
+<p><code>display()</code>/<code>toString()</code> overrides give polymorphic console rendering; <code>Book</code> orders by title, <code>HoldRequest</code> by request date.</p>
+
+<h3>8.5 ER Diagram</h3>
+<div class="code-block">PERSON                      BOOK                        LOAN
+id (PK)                     id (PK)                     id (PK)
+name                        isbn (UNIQUE)               book_id (FK→BOOK)
+phone                       title                       member_id (FK→PERSON)
+address                     author                      issue_date / due_date
+username (UNIQUE)           subject                     return_date
+password                    status                      fine_amount / fine_paid
+role                        (AVAILABLE|ISSUED|RESERVED) renewed_count
+salary, desk_no, office_no
+
+HOLD_REQUEST: id (PK), book_id (FK→BOOK), member_id (FK→PERSON),
+              request_date, fulfilled (0/1)
+
+PERSON 1—N LOAN; BOOK 1—N LOAN; PERSON 1—N HOLD_REQUEST; BOOK 1—N HOLD_REQUEST
+Indexes: loan(member_id), hold_request(book_id)</div>
+<p class="note"><strong>Note:</strong> This schema matches the DDL in <code>lms.util.Database</code> exactly. Single-table inheritance is used for <code>person</code> (role discriminator with nullable salary/desk/office columns).</p>
+
+<h2><span class="section-number">9</span> Design Decisions &amp; Rationale</h2>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Decision</th><th>Rationale</th></tr></thead>
+<tbody>
+<tr><td>Console-based UI</td><td>Evaluation requires command-line executability; menu-driven CLI is fully testable via scripted input</td></tr>
+<tr><td>SQLite (embedded)</td><td>Zero-config file database; evaluator runs the project with no server installation</td></tr>
+<tr><td>Plain JDBC</td><td>Direct application of Module 5; no ORM hides the SQL being demonstrated</td></tr>
+<tr><td><code>PreparedStatement</code> everywhere</td><td>Injection-safe parameterised queries and correct JDBC practice</td></tr>
+<tr><td>DAO pattern</td><td>Separates persistence from business rules; each DAO owns its table's SQL</td></tr>
+<tr><td>Service layer</td><td>Centralises all business rules (limits, fines, holds) in one auditable class</td></tr>
+<tr><td>Explicit transactions</td><td>Issue/return touch multiple tables; commit/rollback guarantees consistency</td></tr>
+<tr><td><code>PriorityQueue&lt;HoldRequest&gt;</code> ordered by request date</td><td>First-requested-first-served hold fulfilment via natural ordering</td></tr>
+<tr><td><code>ScheduledExecutorService</code> daemons</td><td>Meaningful concurrency tasks (overdue fines, backups) rather than artificial loops</td></tr>
+<tr><td><code>synchronized</code> service methods</td><td>Thread-safe mutations against background monitor threads</td></tr>
+<tr><td>Custom checked exceptions</td><td>Domain failures handled explicitly; causes chained for diagnosis</td></tr>
+<tr><td><code>Properties</code> configuration</td><td>Loan period, fine rate, intervals and directories tunable without recompilation</td></tr>
+<tr><td><code>.gitignore</code> for runtime dirs</td><td><code>data/</code>, <code>logs/</code>, <code>backups/</code>, <code>reports/</code>, <code>build/</code> stay untracked; JDBC JAR is tracked</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2><span class="section-number">10</span> Course Module Mapping</h2>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Module</th><th>Course Topics</th><th>Evidence in Project</th></tr></thead>
+<tbody>
+<tr><td><strong>Module 1</strong></td><td>Java basics, packages, control statements, arrays, strings, I/O fundamentals</td><td><code>Main</code>, <code>Console</code>, <code>Config</code>, <code>TablePrinter</code>; <code>switch</code>, <code>do-while</code>, enhanced <code>for</code>, <code>String.format</code>, <code>Scanner</code></td></tr>
+<tr><td><strong>Module 2</strong></td><td>Classes, objects, inheritance, abstraction, polymorphism, encapsulation, interfaces, enums</td><td><code>Person → Member / Staff → Librarian / Clerk</code>; <code>Displayable</code>; <code>BookStatus</code> enum; <code>Comparable</code> on Book/HoldRequest; overridden <code>toString</code>/<code>display()</code></td></tr>
+<tr><td><strong>Module 3</strong></td><td>Exception handling (try/catch/finally, multi-catch, throws, custom exceptions), I/O (streams, readers/writers, Properties)</td><td><code>LMSException</code> + 10 subclasses; try-with-resources on JDBC and files; chained exceptions (<code>initCause</code>); <code>Properties</code> load/store; <code>BufferedReader</code>/<code>BufferedWriter</code>, <code>PrintWriter</code>; CSV parsing</td></tr>
+<tr><td><strong>Module 4</strong></td><td>Collections: List, Map, Set, Queue, Comparator, utility classes</td><td><code>ArrayList</code> (listings), <code>HashMap</code> (stats accumulation), <code>TreeMap</code> (sorted stats), <code>TreeSet</code> (distinct subjects), <code>PriorityQueue&lt;HoldRequest&gt;</code> ordered by request date, <code>LinkedList</code> (activity ring buffer), <code>Collections.sort</code> + <code>Comparator</code></td></tr>
+<tr><td><strong>Module 5</strong></td><td>JDBC (DriverManager, Connection, PreparedStatement, ResultSet, transactions), concurrency (ExecutorService, synchronized, daemon threads)</td><td><code>Database.open()</code>, <code>PreparedStatement</code> exclusively, <code>setAutoCommit(false)</code> transactions, generated keys; OverdueMonitor + BackupService as <code>ScheduledExecutorService</code> daemons; <code>synchronized</code> service methods</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2><span class="section-number">11</span> Implementation Details</h2>
+
+<h3>11.1 Object-Oriented Design (Module 2)</h3>
+<p><code>Person</code> and <code>Staff</code> are abstract; <code>Member</code>, <code>Librarian</code> and <code>Clerk</code> are concrete. All fields are private with accessors. <code>Book</code>, <code>Loan</code> and <code>HoldRequest</code> implement <code>Displayable</code> for uniform rendering; <code>Book</code> and <code>HoldRequest</code> implement <code>Comparable</code>. <code>BookStatus</code> is an enum guarding all state transitions.</p>
+
+<h3>11.2 Exception Handling (Module 3)</h3>
+<p><code>LMSException</code> is the checked root with 10 subclasses. Service methods declare specific <code>throws</code>. <code>OperationFailedException</code> wraps <code>SQLException</code> with <code>initCause</code>. <code>importBooks()</code> uses multi-catch (<code>IOException | SQLException</code>). The UI catches <code>LMSException</code> per flow and prints the message.</p>
+
+<h3>11.3 File I/O (Module 3)</h3>
+<p><code>Config</code> loads/stores <code>config/app.properties</code> (defaults written on first run). <code>ReportGenerator</code> writes timestamped CSV/TXT reports via <code>BufferedWriter</code>. <code>ActivityLog</code> appends to <code>logs/lms.log</code>. <code>BackupService</code> copies the DB file with <code>Files.copy</code> and appends the manifest via <code>PrintWriter</code>. CSV import reads via <code>BufferedReader</code>, skipping headers, blanks and duplicate ISBNs.</p>
+
+<h3>11.4 Collections Framework (Module 4)</h3>
+<p><code>ArrayList</code> for ordered listings; <code>HashMap</code> for O(1) statistic accumulation; <code>TreeMap</code> for sorted output; <code>TreeSet</code> for distinct subjects; <code>PriorityQueue</code> (natural ordering by request date) to select the earliest pending hold on return; <code>LinkedList</code> as a bounded recent-activity ring buffer (max 50); <code>Comparator</code>/<code>Collections.sort</code> for view-level ordering.</p>
+
+<h3>11.5 JDBC &amp; Transactions (Module 5)</h3>
+<p>Driver loaded with <code>Class.forName("org.sqlite.JDBC")</code> (friendly error if the JAR is missing). Every query uses <code>PreparedStatement</code>; inserts retrieve generated keys. Issue and return run inside explicit transactions:</p>
+<div class="code-block">c.setAutoCommit(false);
+try {
+    loanDao.insert(c, loan);
+    bookDao.updateStatus(c, bookId, BookStatus.ISSUED);
+    if (consumedHold != null) holdDao.markFulfilled(c, consumedHold.getId());
+    c.commit();
+} catch (SQLException e) {
+    c.rollback();
+    throw new OperationFailedException("Issue failed, changes rolled back.", e);
+} finally {
+    c.setAutoCommit(true);
+}</div>
+
+<h3>11.6 Concurrency (Module 5)</h3>
+<p><code>OverdueMonitor</code> runs every <code>overdue.check.seconds</code> (default 60), refreshing fines and logging the scan. <code>BackupService</code> runs every <code>backup.interval.seconds</code> (default 300), copying the SQLite file and updating the manifest. Both use a single-threaded <code>ScheduledExecutorService</code> with daemon threads. Mutating <code>LibraryService</code> methods are <code>synchronized</code> so monitor scans and console operations never interleave unsafely.</p>
+
+<h2><span class="section-number">12</span> Screenshots / Results</h2>
+<p>The application offers two interfaces — a Swing desktop GUI (default) and a terminal UI (<code>--cli</code>); results are captured as console transcripts and GUI screenshots (<code>screenshots/gui/</code>). Verified extracts:</p>
+
+<h3>Librarian statistics</h3>
+<div class="code-block">Enter choice: 10
+  Books per subject:
+   ARTIFICIAL INTELLIGENCE   1
+   DATABASES                 2
+   ...
+  Total books: 8</div>
+
+<h3>Circulation with fine and hold fulfilment</h3>
+<div class="code-block">Enter choice: 2        (Return a Book)
+Book ID: 5
+[ok] Returned with fine Rs. 55.00 (collect at 'Collect Fine').
+  [log] Book 5 returned by member 3 with fine Rs. 55.00
+  [log] Hold fulfilled for member 4 — book reserved at desk.
+
+Enter choice: 4        (Collect Fine)
+Member ID: 3
+[ok] Collected Rs. 55.00.</div>
+
+<h3>Automated smoke test (reproducible)</h3>
+<div class="code-block">$ ./tests/run_smoke_test.sh
+[PASS] TC01  Valid librarian login
+[PASS] TC05  Overdue return calculates fine
+...
+Result: 86 passed, 0 failed
+ALL TESTS PASSED</div>
+
+<h2><span class="section-number">13</span> Testing Approach</h2>
+<p>Testing is two-layered: a reproducible automated smoke test plus documented manual scenarios.</p>
+<h3>13.1 Automated smoke test</h3>
+<p><code>tests/run_smoke_test.sh</code> runs the compiled application in a temporary sandbox with a fresh database, feeds a deterministic scripted session covering all three roles, and asserts exact expected outputs (65 checks). It exits 0 only when every assertion passes; on failure the raw console output is preserved for diagnosis. <code>tests/test_cases.md</code> documents the matrix; <code>tests/expected_output.txt</code> holds a verified passing run.</p>
+<h3>13.2 Test matrix (executed 2026-09-17, OpenJDK 25.0.3, Linux)</h3>
+<div class="table-wrap">
+<table>
+<thead><tr><th>ID</th><th>Input / Action</th><th>Expected Result</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>TC01</td><td>Valid librarian login</td><td>Librarian menu opens</td><td>PASS</td></tr>
+<tr><td>TC02</td><td>Clerk login, wrong password</td><td><code>Incorrect password.</code></td><td>PASS</td></tr>
+<tr><td>TC03</td><td>Role-mismatch login</td><td>Role-mismatch rejection</td><td>PASS</td></tr>
+<tr><td>TC04</td><td>Issue available book</td><td>Loan created, due +14 days</td><td>PASS</td></tr>
+<tr><td>TC05</td><td>Return book 11 days overdue</td><td>Fine Rs. 55.00 (11 × Rs. 5)</td><td>PASS</td></tr>
+<tr><td>TC05</td><td>Return on time</td><td>No fine</td><td>PASS</td></tr>
+<tr><td>TC06</td><td>Issue already-issued book</td><td>Rejected (issued to another member)</td><td>PASS</td></tr>
+<tr><td>TC06</td><td>Issue at loan limit (3)</td><td><code>Loan limit reached (3 books).</code></td><td>PASS</td></tr>
+<tr><td>TC07</td><td>Issue while fine pending</td><td><code>Pending fine of Rs. 55.00</code></td><td>PASS</td></tr>
+<tr><td>TC08</td><td>Collect fine</td><td><code>Collected Rs. 55.00.</code></td><td>PASS</td></tr>
+<tr><td>TC10</td><td>Member views loans</td><td>2 active loans listed</td><td>PASS</td></tr>
+<tr><td>TC11</td><td>Hold on issued book</td><td>Queued, position 1</td><td>PASS</td></tr>
+<tr><td>TC11</td><td>Reserved book issued to first hold owner</td><td>Hold consumed, loan created</td><td>PASS</td></tr>
+<tr><td>TC12</td><td>Hold own borrowed book</td><td>Rejected</td><td>PASS</td></tr>
+<tr><td>TC13</td><td>Hold available book / third hold per member</td><td>Rejected (borrow directly / hold limit)</td><td>PASS</td></tr>
+<tr><td>TC14</td><td>Renew active loan / third renewal / renewal with pending hold</td><td>New due date / limit reached / renewal blocked</td><td>PASS</td></tr>
+<tr><td>TC15</td><td>Subject statistics</td><td>Sorted counts, total 8</td><td>PASS</td></tr>
+<tr><td>TC16</td><td>View all books</td><td>8 seeded books listed</td><td>PASS</td></tr>
+<tr><td>TC17</td><td>Add book</td><td><code>Book added with ID 9.</code></td><td>PASS</td></tr>
+<tr><td>TC18</td><td>Duplicate ISBN</td><td><code>ISBN already exists: 978-TEST-0001</code></td><td>PASS</td></tr>
+<tr><td>TC19</td><td>Double return</td><td><code>This book is not currently issued.</code></td><td>PASS</td></tr>
+<tr><td>TC20</td><td>Books CSV report</td><td>File created in <code>reports/</code></td><td>PASS</td></tr>
+<tr><td>TC21</td><td>CSV import (6 rows)</td><td><code>6 book(s) imported.</code></td><td>PASS</td></tr>
+<tr><td>TC22</td><td>Backup now</td><td>Timestamped backup in <code>backups/</code></td><td>PASS</td></tr>
+<tr><td>TC23</td><td>Runtime artefacts</td><td><code>data/library.db</code>, <code>logs/lms.log</code> created</td><td>PASS</td></tr>
+<tr><td>TC24</td><td>Dashboard overview (KPIs, charts)</td><td>15 books, 3 active loans, status/subject charts</td><td>PASS</td></tr>
+<tr><td>TC24</td><td>Circulation / Members / Hold Queue drill-downs</td><td>Attention table, member loans/fines, grouped holds</td><td>PASS</td></tr>
+<tr><td>TC25</td><td>Member: My Dashboard</td><td>Own loans + fines KPIs, MY LOANS table</td><td>PASS</td></tr>
+<tr><td>—</td><td>Full session</td><td>No unhandled exceptions; clean exit</td><td>PASS</td></tr>
+</tbody>
+</table>
+</div>
+<h3>13.3 Manual scenarios additionally verified</h3>
+<p>Negative-input handling of <code>Console.readInt</code> (re-prompt); delete blocked for issued/reserved books; CSV import skipping duplicate ISBNs with reported count; overdue monitor scan entries in <code>logs/lms.log</code>; backup manifest append; password change followed by re-login with the new password.</p>
+
+<h2><span class="section-number">14</span> Challenges Faced</h2>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Challenge</th><th>Solution</th></tr></thead>
+<tbody>
+<tr><td>Maintaining database consistency during issue/return (multi-table updates)</td><td>Explicit JDBC transactions with commit/rollback so partial updates are impossible</td></tr>
+<tr><td>Preventing invalid library operations where many rules interact</td><td>All rules centralised in <code>LibraryService</code>; every failure expressed as a specific custom exception</td></tr>
+<tr><td>Running periodic tasks without blocking the CLI</td><td><code>ScheduledExecutorService</code> with daemon threads; <code>synchronized</code> service methods for shared-state safety</td></tr>
+<tr><td>Keeping UI, business logic and persistence decoupled</td><td>Layered <code>ui → service → dao</code> structure with model classes shared via <code>Displayable</code></td></tr>
+<tr><td>Making testing reproducible rather than claim-based</td><td>Sandboxed scripted smoke test with 65 assertions and a machine-checkable exit code, plus an in-process GUI self-test that drives the Swing app and captures screenshots</td></tr>
+<tr><td>Keeping runtime artefacts out of the repository</td><td>Configurable output directories and <code>.gitignore</code> rules; bundled JDBC JAR tracked</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2><span class="section-number">15</span> Learnings &amp; Key Takeaways</h2>
+<ul>
+<li>Object-oriented design pays off across a whole application: the <code>Person</code> hierarchy and <code>Displayable</code> interface let the UI treat all model objects uniformly.</li>
+<li>JDBC is more than queries — transactions (<code>setAutoCommit</code>, <code>commit</code>, <code>rollback</code>) are what make multi-table operations trustworthy.</li>
+<li>Choosing the right collection matters: <code>PriorityQueue</code> ordered by request date expresses hold fulfilment directly; <code>TreeMap</code> yields sorted statistics for free.</li>
+<li>A custom checked exception hierarchy produces far clearer errors than blanket <code>catch (Exception)</code>, while chaining preserves the root cause.</li>
+<li><code>ScheduledExecutorService</code> with daemon threads is a clean way to run background work in a CLI application that must exit promptly.</li>
+<li>Layered packaging (<code>ui → service → dao</code>) made the automated test suite straightforward to build.</li>
+<li>Configuration via <code>Properties</code> separated behaviour from code and enabled sandboxed test runs.</li>
+<li>A reproducible test script converts "it worked when I tried it" into evidence anyone can re-run in seconds.</li>
+<li>Git and GitHub — with meaningful commits and ignored runtime artefacts — are part of deliverable quality.</li>
+</ul>
+
+<h2><span class="section-number">16</span> Limitations</h2>
+<ul>
+<li><strong>Plaintext passwords</strong> — acceptable for this educational scope, unsuitable for production.</li>
+<li><strong>Single-branch library</strong> — no multi-branch support or <code>branch_id</code> dimension.</li>
+<li><strong>No reservation expiry</strong> — a fulfilled hold waits at the desk indefinitely.</li>
+<li><strong>No notifications</strong> — members learn about hold fulfilment or fines only at the console.</li>
+<li><strong>File-copy backups</strong> — a copy taken mid-transaction could be momentarily inconsistent; <code>VACUUM INTO</code> would guarantee consistency.</li>
+<li><strong>Console-only UI</strong> — intentional per evaluation requirements.</li>
+</ul>
+
+<h2><span class="section-number">17</span> Future Enhancements</h2>
+<ul>
+<li>Hash passwords with PBKDF2/BCrypt and add session tokens.</li>
+<li>Multi-branch support with branch-level catalog separation.</li>
+<li>Email/SMS notifications for overdue reminders and hold fulfilment.</li>
+<li>Reservation expiry with automatic release of uncollected holds.</li>
+<li>Consistent hot backups via SQLite <code>VACUUM INTO</code>.</li>
+<li>A unit-test layer (JUnit) complementing the end-to-end smoke suite.</li>
+<li>Optional REST API layer for integration beyond the console.</li>
+</ul>
+
+<h2><span class="section-number">18</span> Conclusion</h2>
+<p>This Library Management System demonstrates an integrated application of all five modules of the <em>Programming in Java</em> course in one coherent, runnable product: language fundamentals and I/O, object-oriented design, a disciplined exception hierarchy, purposeful use of the Collections Framework, and JDBC persistence with real transactions alongside scheduled concurrency. Beyond features, the project emphasises engineering discipline — a layered architecture, a reproducible 41-assertion test suite, honest documentation of limitations, and clean separation of runtime artefacts from source. The code is original work written specifically for this evaluation.</p>
+
+<h2><span class="section-number">19</span> References</h2>
+<ol>
+<li>VITyarthi — <em>Programming in Java</em> course materials, Modules 1–5.</li>
+<li>Oracle — The Java™ Tutorials: Collections, JDBC Database Access, Concurrency.</li>
+<li>Xerial — <code>sqlite-jdbc</code> 3.53.4.0 driver documentation.</li>
+<li>Java SE API documentation — <code>java.time</code>, <code>java.sql</code>, <code>java.util.concurrent</code>.</li>
+<li>SQLite documentation — file format, locking and <code>VACUUM INTO</code>.</li>
+</ol>
+
+<div style="margin-top: 30pt; padding-top: 10pt; border-top: 2pt solid #cba135; font-size: 9pt; color: #555;">
+<strong>Project Title:</strong> Library Management System — Programming in Java (Evaluated Project)<br>
+<strong>Student:</strong> Shamique Khan &nbsp;|&nbsp; <strong>Registration No.:</strong> 25BAI10187 &nbsp;|&nbsp; <strong>Course:</strong> Programming in Java — VITyarthi Flipped Course<br>
+<strong>Repository:</strong> https://github.com/shamiquekhan/Library-Management-System &nbsp;|&nbsp; <strong>Visibility:</strong> Public
+</div>
+
+</body>
+</html>

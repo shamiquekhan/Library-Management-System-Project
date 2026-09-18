@@ -1,0 +1,79 @@
+# Verified output of a passing smoke-test run
+# (./tests/run_smoke_test.sh, 65 checks, exit code 0)
+# Recorded: 2026-09-18, OpenJDK "25.0.3", Linux
+
+====================================================
+ Library Management System — Smoke Test Suite
+====================================================
+JDK: openjdk version "25.0.3" 2026-04-21
+Running application with scripted input...
+----------------------------------------------------
+[PASS] No unhandled JVM exceptions
+[PASS] Application exits cleanly
+[PASS] TC02  Invalid password rejected
+[PASS] TC03  Role-mismatch login rejected
+[PASS] TC01  Valid librarian login
+[PASS] TC16  View all books (seeded titles)
+[PASS] TC16  Seeded book count shown
+[PASS] TC14  Overdue loan listed
+[PASS] TC15  Subject statistics rendered
+[PASS] TC15  Statistics total shown
+[PASS] TC17  Add book succeeds
+[PASS] TC18  Duplicate ISBN rejected
+[PASS] TC04  Valid clerk login
+[PASS] TC05  Overdue return calculates fine
+[PASS] TC07  Issue blocked while fine pending
+[PASS] TC08  Fine collected
+[PASS] TC04  Issue available book succeeds
+[PASS] TC06  Issue of issued book rejected
+[PASS] TC09  Valid member login
+[PASS] TC10  Member loan view
+[PASS] TC12  Hold on borrowed book rejected
+[PASS] TC11  Hold on issued book queued
+[PASS] TC13  Member fine view
+[PASS] TC09  Second member login
+[PASS] TC13  Hold on available book rejected
+[PASS] TC11  Member hold queued
+[PASS] TC13  Hold limit enforced
+[PASS] TC05  On-time return has no fine
+[PASS] TC19  Double return rejected
+[PASS] TC11  Reserved book issued to hold winner
+[PASS] TC06  Loan limit enforced
+[PASS] TC14  Renewal succeeds
+[PASS] TC14  Renewal limit enforced
+[PASS] TC14  Renewal blocked by pending hold
+[PASS] TC20  CSV report generated
+[PASS] TC21  CSV import processes records
+[PASS] TC22  Database backup created
+[PASS] TC24  ANSI banner rendered once
+[PASS] TC24  Overview shows total books
+[PASS] TC24  Overview books value
+[PASS] TC24  Overview members value
+[PASS] TC24  Overview active loans value
+[PASS] TC24  Overview overdue value
+[PASS] TC24  Overview fines value
+[PASS] TC24  Status line shows available
+[PASS] TC24  Status line shows issued
+[PASS] TC24  Status line shows reserved
+[PASS] TC24  Subject chart shows programming
+[PASS] TC24  Attention table lists due loans
+[PASS] TC24  Members table shows alice
+[PASS] TC24  Members table shows bobby
+[PASS] TC24  Circulation drill-down rendered once
+[PASS] TC24  Circulation snapshot counts
+[PASS] TC24  Hold queue rendered once
+[PASS] TC24  Hold queue groups by book
+[PASS] TC24  Hold queue lists second book
+[PASS] TC25  Member dashboard rendered once
+[PASS] TC25  Member dashboard library line
+[PASS] TC25  Member dashboard loans line
+[PASS] TC25  Member dashboard fines line
+[PASS] TC25  Member loans table rendered once
+[PASS] TC20  Report file exists on disk
+[PASS] TC22  Backup file exists on disk
+[PASS] TC23  SQLite database created
+[PASS] TC23  Activity log written
+----------------------------------------------------
+Result: 65 passed, 0 failed
+====================================================
+ALL TESTS PASSED
