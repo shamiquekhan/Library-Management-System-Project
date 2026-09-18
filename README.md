@@ -251,9 +251,18 @@ The application has exactly **two interfaces**: the Swing desktop app
 (default `./run.sh`) and the terminal UI (`./run.sh --cli`). No web,
 HTML or browser interface exists or is required.
 
-- `screenshots/gui/` — real captures of the desktop app: sign-in screen,
-  librarian dashboard with live KPIs, Books, Members, Circulation, Holds,
-  Fines, Reports, Settings, member dashboard, My Loans / My Holds / My Fines
+### Swing Desktop App
+
+| Screen | Preview |
+|--------|---------|
+| **Login** | <img src="screenshots/gui/00-login.png" alt="Login Screen" width="600"/> |
+| **Librarian Dashboard** | <img src="screenshots/gui/01-librarian-dashboard.png" alt="Librarian Dashboard" width="600"/> |
+| **Books Management** | <img src="screenshots/gui/02-books.png" alt="Books Management" width="600"/> |
+| **Member Dashboard** | <img src="screenshots/gui/10-member-dashboard.png" alt="Member Dashboard" width="600"/> |
+
+All 15 screenshots available in [`screenshots/gui/`](screenshots/gui/):
+sign-in, librarian dashboard, books, members, circulation, holds, fines, reports, settings, dashboard return, member dashboard, my loans, my holds, my fines, final.
+
 - `screenshots/CONSOLE_TRANSCRIPT.md` — verified terminal session transcripts
   (login menu, librarian portal, circulation, member portal, reports, backup)
 
