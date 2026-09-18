@@ -12,7 +12,7 @@
 | **Course** | Programming in Java (Flipped Course) |
 | **Platform** | VITyarthi |
 | **Academic Year** | 2026–2027 |
-| **Repository** | https://github.com/shamiquekhan/Library-Management-System |
+| **Repository** | https://github.com/shamiquekhan/Library-Management-System-Project |
 | **Submission Date** | September 2026 |
 
 ---
@@ -87,7 +87,7 @@ The system provides five major functional modules, exceeding the required minimu
 # 6. Non-Functional Requirements
 
 ### 6.1 Performance
-Common operations (book search, member lookup, issue, return, reporting) complete in milliseconds. SQL indexes exist on `loan(member_id)` and `hold_request(book_id)`; in-memory aggregation uses `HashMap`/`TreeMap`; SQLite runs embedded with zero server overhead.
+The application is designed to remain responsive for the expected dataset size of the educational project. Database-backed GUI operations are performed outside the Swing Event Dispatch Thread using `SwingWorker` (via `UiWorker`). SQLite provides embedded persistence without requiring a separate database server. SQL indexes exist on `loan(member_id)` and `hold_request(book_id)`; in-memory aggregation uses `HashMap`/`TreeMap`.
 
 ### 6.2 Reliability
 Circulation operations run inside JDBC transactions: `setAutoCommit(false)`, `commit()` on success, `rollback()` on failure, so an issue or return can never leave a partially updated database. All streams and connections are managed with try-with-resources.
@@ -114,43 +114,74 @@ Both background services run as daemon threads on a single-threaded `ScheduledEx
 
 # 7. System Architecture
 
-Three-layer architecture with cross-cutting services:
+Three-layer architecture with cross-cutting services and dual presentation layers:
 
 ```
-┌──────────────────────────────────────────────┐
-│  Console UI   ConsoleUI, LibrarianConsole,   │
-│               ClerkConsole, MemberConsole    │
-├──────────────────────────────────────────────┤
-│  LibraryService  business rules, validation, │
-│                  synchronized operations     │
-├──────────────────────────────────────────────┤
-│  DAO Layer   BookDao, PersonDao, LoanDao,    │
-│              HoldDao (JDBC / PreparedStatement)
-├──────────────────────────────────────────────┤
-│  SQLite database (embedded file)             │
-└──────────────────────────────────────────────┘
+                    USER
+                      │
+          ┌───────────┴───────────┐
+          ▼                       ▼
+   ┌─────────────┐        ┌─────────────┐
+   │  Swing UI   │        │  Console UI │
+   │─────────────│        │─────────────│
+   │ LoginFrame  │        │ ConsoleUI   │
+   │ Dashboard   │        │ *Console    │
+   │ Panels      │        │             │
+   └──────┬──────┘        └──────┬──────┘
+          │                      │
+          └──────────┬───────────┘
+                     ▼
+        ┌────────────────────────┐
+        │   Service Layer        │
+        │────────────────────────│
+        │ LibraryService         │
+        │ DashboardService       │
+        │ synchronized methods   │
+        └───────────┬────────────┘
+                    ▼
+        ┌────────────────────────┐
+        │   DAO Layer            │
+        │────────────────────────│
+        │ BookDao, PersonDao,    │
+        │ LoanDao, HoldDao       │
+        │ (JDBC / PreparedStatement)
+        └───────────┬────────────┘
+                    ▼
+        ┌────────────────────────┐
+        │   SQLite Database      │
+        │   (embedded file)      │
+        └────────────────────────┘
     Cross-cutting: Config, ActivityLog, ReportGenerator,
-    OverdueMonitor, BackupService, FineCalculator, DateTimeUtil
+    OverdueMonitor, BackupService, FineCalculator, DateTimeUtil,
+    UiWorker (SwingWorker), UITheme
 ```
 
-Each layer communicates only with the layer beneath it. The UI catches `LMSException` and prints messages; the service layer contains all business rules; the DAO layer contains all SQL. `Database.open(config)` provides connections with `PRAGMA foreign_keys=ON`.
+Each layer communicates only with the layer beneath it. The Swing UI and Console UI both use the same service layer. The UI catches `LMSException` and prints messages; the service layer contains all business rules; the DAO layer contains all SQL. `Database.open(config)` provides connections with `PRAGMA foreign_keys=ON`. Swing database work runs off the EDT via `UiWorker` (`SwingWorker`).
 
 ### Package structure
 
 ```
 lms
-├── Main              entry point, bootstrapping
-├── model/     (10)   Person hierarchy, Book, Loan, HoldRequest, BookStatus, Displayable
-├── exception/ (11)   LMSException + 10 subclasses
-├── dao/       (4)    BookDao, PersonDao, LoanDao, HoldDao
-├── service/   (1)    LibraryService
-├── reports/   (1)    ReportGenerator
-├── concurrency/(2)   OverdueMonitor, BackupService
-├── util/      (7)    Console, Config, Database, DateTimeUtil, FineCalculator, ActivityLog, TablePrinter
-└── ui/        (4)    ConsoleUI, LibrarianConsole, ClerkConsole, MemberConsole
+├── (root)      (2)     Main, AppContext
+├── model/      (10)    Person hierarchy, Book, Loan, HoldRequest, BookStatus, Displayable
+├── exception/  (11)    LMSException + 10 subclasses
+├── dao/        (4)     BookDao, PersonDao, LoanDao, HoldDao
+├── service/    (2)     LibraryService, DashboardService
+├── reports/    (1)     ReportGenerator
+├── concurrency/(2)     OverdueMonitor, BackupService
+├── util/       (7)     Console, Config, Database, DateTimeUtil, FineCalculator, ActivityLog, TablePrinter
+└── ui/         (28)    Swing: LoginFrame, DashboardFrame, DashboardPanel,
+                        BooksPanel, MembersPanel, CirculationPanel, HoldsPanel,
+                        FinesPanel, ReportsPanel, SettingsPanel, HeaderPanel,
+                        SidebarPanel, MemberDashboardPanel, MemberLoansPanel,
+                        DashboardController, DashboardRenderer, DashboardUI,
+                        StatCard, SectionPanel, SubjectChartPanel, TableStyle,
+                        UITheme, UiWorker, LoginFrame
+                        Console: ConsoleUI, LibrarianConsole, ClerkConsole,
+                        MemberConsole, DashboardConsole
 ```
 
-**Total: 41 Java source files.**
+**Total: 67 Java source files.**
 
 ---
 
@@ -188,7 +219,7 @@ Return branch: book overdue? → calculate fine → record fine (unpaid)
                otherwise       → status AVAILABLE
 ```
 
-### 8.3 Sequence Diagram — Issue Book (primary flow)
+### 8.3 Sequence Diagram — Issue Book (Console UI)
 
 ```
 Clerk      ConsoleUI     LibraryService        BookDao/PersonDao/LoanDao/HoldDao   SQLite
@@ -205,6 +236,29 @@ Clerk      ConsoleUI     LibraryService        BookDao/PersonDao/LoanDao/HoldDao
   │◄──────────┤ "[ok] Issued. Due on ..."          (rollback on any SQLException)    │
 ```
 
+### 8.3b Sequence Diagram — Issue Book (Swing UI)
+
+```
+User       CirculationPanel  UiWorker          LibraryService    BookDao/LoanDao/HoldDao  SQLite
+  │              │                │                   │                   │                    │
+  │ click Issue  │                │                   │                   │                    │
+  ├─────────────►│                │                   │                   │                    │
+  │              ├───────────────►│ doInBackground()  │                   │                    │
+  │              │                ├──────────────────►│ issueBook()       │                    │
+  │              │                │                   ├──────────────────►│ findById(bookId)   │
+  │              │                │                   │                   ├──────────────────►│ SELECT
+  │              │                │                   │                   │◄──── Book ─────────┤
+  │              │                │                   │ validate: exists, member, status,
+  │              │                │                   │ loan limit, fines, overdue
+  │              │                │                   │ BEGIN (setAutoCommit false)
+  │              │                │                   ├─ insert loan ─► update book ISSUED ─► fulfil hold
+  │              │                │                   │◄──────────── commit() ──────────────────────────┤
+  │              │                │◄──────────────────│ Result: issued    │                    │
+  │              │ done() on EDT  │                   │                   │                    │
+  │              │◄───────────────│                   │                   │                    │
+  │◄─────────────│ UI refreshed   │                   │                   │                    │
+```
+
 ### 8.4 Class Diagram
 
 ```
@@ -217,7 +271,20 @@ Person (abstract)                      Book   HoldRequest
         └── Clerk (deskNo)
 
 LibraryService ──uses──► BookDao, PersonDao, LoanDao, HoldDao
+DashboardService ──uses──► BookDao, PersonDao, LoanDao, HoldDao
+
+Swing UI:
+LoginFrame ──uses──► LibraryService
+DashboardFrame ──uses──► LibraryService, DashboardService
+BooksPanel, MembersPanel, CirculationPanel, HoldsPanel,
+FinesPanel, ReportsPanel, SettingsPanel,
+MemberDashboardPanel, MemberLoansPanel,
+SidebarPanel, HeaderPanel, StatCard, SubjectChartPanel,
+UITheme, UiWorker (SwingWorker) ──uses──► Service Layer
+
+Console UI:
 ConsoleUI / *Console ──uses──► LibraryService
+
 BookStatus (enum): AVAILABLE | ISSUED | RESERVED
 ```
 
@@ -258,7 +325,8 @@ This schema matches the DDL in `lms.util.Database` exactly. Single-table inherit
 
 | Decision | Rationale |
 |---|---|
-| Console-based UI | The evaluation requires command-line executability; a menu-driven CLI is fully testable via scripted input. |
+| Java Swing UI | Provides a native desktop interface using Java only and keeps the application self-contained. |
+| CLI fallback | Allows execution in headless environments and provides a deterministic interface for automated testing. |
 | SQLite (embedded) | Zero-config file database; evaluator runs the project with no server installation. |
 | JDBC (plain) | Direct application of Module 5; no ORM obscures the SQL being demonstrated. |
 | `PreparedStatement` everywhere | SQL-injection-safe parameterised queries and correct JDBC practice. |
@@ -380,7 +448,7 @@ Running application with scripted input...
 [PASS] TC05  Overdue return calculates fine
 [PASS] TC08  Fine collected
 ...
-Result: 86 passed, 0 failed
+Result: 65 passed, 0 failed
 ====================================================
 ALL TESTS PASSED
 ```
@@ -399,46 +467,46 @@ Testing is two-layered: a **reproducible automated smoke test** plus documented 
 
 ```bash
 ./tests/run_smoke_test.sh
-# Result: 86 passed, 0 failed — ALL TESTS PASSED (exit code 0)
+# Result: 65 passed, 0 failed — ALL TESTS PASSED (exit code 0)
 ```
 
 ### 13.2 Test case matrix (executed 2026-09-17, OpenJDK 25.0.3, Linux)
 
-| ID | Input / Action | Expected Result | Status |
-|---|---|---|---|
+| ID   | Input / Action | Expected Result | Status |
+|------|---|---|---|
 | TC01 | Valid librarian login | Librarian menu opens | PASS |
 | TC02 | Clerk login, wrong password | `Incorrect password.` | PASS |
 | TC03 | Role-mismatch login | Role-mismatch rejection | PASS |
 | TC04 | Issue available book | Loan created, due +14 days | PASS |
 | TC05 | Return book 11 days overdue | Fine Rs. 55.00 (11 × Rs. 5) | PASS |
-| TC05 | Return on time | No fine | PASS |
-| TC06 | Issue already-issued book | Rejected (issued to another member) | PASS |
-| TC06 | Issue at loan limit (3) | `Loan limit reached (3 books).` | PASS |
-| TC07 | Issue while fine pending | `Pending fine of Rs. 55.00` | PASS |
-| TC08 | Collect fine | `Collected Rs. 55.00.` | PASS |
-| TC09 | Valid clerk / member logins | Role menus open | PASS |
-| TC10 | Member views loans | 2 active loans listed | PASS |
-| TC11 | Hold on issued book | Queued, position 1 | PASS |
-| TC11 | Reserved book issued to first hold owner | Hold consumed, loan created | PASS |
-| TC12 | Hold own borrowed book | Rejected | PASS |
-| TC13 | Hold available book | Rejected (borrow directly) | PASS |
-| TC13 | Third hold per member | Hold limit rejection | PASS |
-| TC14 | Renew active loan | New due date | PASS |
-| TC14 | Third renewal | `Renewal limit (2) reached` | PASS |
-| TC14 | Renewal with pending hold | `Renewal blocked — 1 hold request(s)` | PASS |
-| TC15 | Subject statistics | Sorted counts, total 8 | PASS |
-| TC16 | View all books | 8 seeded books listed | PASS |
-| TC17 | Add book | `Book added with ID 9.` | PASS |
-| TC18 | Duplicate ISBN | `ISBN already exists: 978-TEST-0001` | PASS |
-| TC19 | Double return | `This book is not currently issued.` | PASS |
-| TC20 | Books CSV report | File created in `reports/` | PASS |
-| TC21 | CSV import (6 rows) | `6 book(s) imported.` | PASS |
-| TC22 | Backup now | Timestamped backup in `backups/` | PASS |
-| TC23 | Runtime artefacts | `data/library.db`, `logs/lms.log` created | PASS |
-| TC24 | Dashboard overview (KPIs, charts) | 15 books, 3 active loans, status/subject charts | PASS |
-| TC24 | Circulation / Members / Hold Queue drill-downs | Attention table, member loans/fines, grouped holds | PASS |
-| TC25 | Member: My Dashboard | Own loans + fines KPIs, MY LOANS table | PASS |
-| — | Full session | No unhandled exceptions; clean exit | PASS |
+| TC06 | Return on time | No fine | PASS |
+| TC07 | Issue already-issued book | Rejected (issued to another member) | PASS |
+| TC08 | Issue at loan limit (3) | `Loan limit reached (3 books).` | PASS |
+| TC09 | Issue while fine pending | `Pending fine of Rs. 55.00` | PASS |
+| TC10 | Collect fine | `Collected Rs. 55.00.` | PASS |
+| TC11 | Valid clerk / member logins | Role menus open | PASS |
+| TC12 | Member views loans | 2 active loans listed | PASS |
+| TC13 | Hold on issued book | Queued, position 1 | PASS |
+| TC14 | Reserved book issued to first hold owner | Hold consumed, loan created | PASS |
+| TC15 | Hold own borrowed book | Rejected | PASS |
+| TC16 | Hold available book | Rejected (borrow directly) | PASS |
+| TC17 | Third hold per member | Hold limit rejection | PASS |
+| TC18 | Renew active loan | New due date | PASS |
+| TC19 | Third renewal | `Renewal limit (2) reached` | PASS |
+| TC20 | Renewal with pending hold | `Renewal blocked — 1 hold request(s)` | PASS |
+| TC21 | Subject statistics | Sorted counts, total 8 | PASS |
+| TC22 | View all books | 8 seeded books listed | PASS |
+| TC23 | Add book | `Book added with ID 9.` | PASS |
+| TC24 | Duplicate ISBN | `ISBN already exists: 978-TEST-0001` | PASS |
+| TC25 | Double return | `This book is not currently issued.` | PASS |
+| TC26 | Books CSV report | File created in `reports/` | PASS |
+| TC27 | CSV import (6 rows) | `6 book(s) imported.` | PASS |
+| TC28 | Backup now | Timestamped backup in `backups/` | PASS |
+| TC29 | Runtime artefacts | `data/library.db`, `logs/lms.log` created | PASS |
+| TC30 | Dashboard overview (KPIs, charts) | 15 books, 3 active loans, status/subject charts | PASS |
+| TC31 | Circulation / Members / Hold Queue drill-downs | Attention table, member loans/fines, grouped holds | PASS |
+| TC32 | Member: My Dashboard | Own loans + fines KPIs, MY LOANS table | PASS |
+| TC33 | Full session | No unhandled exceptions; clean exit | PASS |
 
 ### 13.3 Manual scenarios additionally verified
 
@@ -450,7 +518,7 @@ Negative-input handling of `Console.readInt` (non-numeric, out-of-range → re-p
 
 1. **Maintaining database consistency during circulation.** Issue and return update several tables (loan, book status, holds). *Solution:* explicit JDBC transactions with commit/rollback so partial updates are impossible.
 2. **Preventing invalid library operations.** Many rules interact (limits, fines, holds, status). *Solution:* centralising all rules in `LibraryService` and expressing every failure as a specific custom exception the UI can print meaningfully.
-3. **Running periodic tasks without blocking the CLI.** *Solution:* `ScheduledExecutorService` with daemon threads for the overdue monitor and backup service, plus `synchronized` service methods to make shared-state mutations thread-safe.
+3. **Running periodic tasks without blocking the application interface.** *Solution:* `ScheduledExecutorService` with daemon threads for the overdue monitor and backup service, plus `synchronized` service methods to make shared-state mutations thread-safe.
 4. **Keeping UI, business logic and persistence decoupled.** *Solution:* the layered `ui → service → dao` structure with model classes shared through interfaces (`Displayable`).
 5. **Making testing reproducible.** Manual testing alone left no executable evidence. *Solution:* a sandboxed scripted smoke test with 65 assertions and a machine-checkable exit code, plus an in-process GUI self-test that drives the Swing app and captures screenshots.
 6. **Keeping runtime artefacts out of the repository.** *Solution:* configurable output directories (`data/`, `logs/`, `backups/`, `reports/`) and `.gitignore` rules, while tracking the bundled JDBC driver.
@@ -463,7 +531,7 @@ Negative-input handling of `Console.readInt` (non-numeric, out-of-range → re-p
 - JDBC is more than queries — transactions (`setAutoCommit`, `commit`, `rollback`) are what make multi-table operations trustworthy.
 - Choosing the right collection matters: `PriorityQueue` ordered by request date expresses hold fulfilment directly; `TreeMap` yields sorted statistics for free.
 - A custom checked exception hierarchy produces far clearer errors than blanket `catch (Exception)`, while chaining preserves the root cause.
-- `ScheduledExecutorService` with daemon threads is a clean way to run background work in a CLI application that must exit promptly.
+- `ScheduledExecutorService` with daemon threads is a clean way to run background work in an application that must exit promptly.
 - Layered packaging (`ui → service → dao`) made the automated test suite straightforward to build, because each layer could be exercised through stable interfaces.
 - Configuration via `Properties` separated behaviour from code and enabled sandboxed test runs.
 - A reproducible test script converts "it worked when I tried it" into evidence anyone can re-run in seconds.
@@ -478,7 +546,6 @@ Negative-input handling of `Console.readInt` (non-numeric, out-of-range → re-p
 - **No reservation expiry** — a fulfilled hold waits at the desk indefinitely.
 - **No notifications** — members learn about hold fulfilment or fines only at the console.
 - **File-copy backups** — a copy taken mid-transaction could be momentarily inconsistent; SQLite `VACUUM INTO` would guarantee hot-backup consistency.
-- **Console-only UI** — intentional per evaluation requirements, but limits accessibility.
 
 ---
 
@@ -496,7 +563,7 @@ Negative-input handling of `Console.readInt` (non-numeric, out-of-range → re-p
 
 # 18. Conclusion
 
-This Library Management System demonstrates an integrated application of all five modules of the *Programming in Java* course in one coherent, runnable product: language fundamentals and I/O, object-oriented design, a disciplined exception hierarchy, purposeful use of the Collections Framework, and JDBC persistence with real transactions alongside scheduled concurrency. Beyond features, the project emphasises engineering discipline — a layered architecture, a reproducible 41-assertion test suite, honest documentation of limitations, and clean separation of runtime artefacts from source. The code is original work written specifically for this evaluation.
+This Library Management System demonstrates an integrated application of all five modules of the *Programming in Java* course in one coherent, runnable product: language fundamentals and I/O, object-oriented design, a disciplined exception hierarchy, purposeful use of the Collections Framework, and JDBC persistence with real transactions alongside scheduled concurrency. Beyond features, the project emphasises engineering discipline — a layered architecture, a reproducible 65-assertion test suite, honest documentation of limitations, and clean separation of runtime artefacts from source. The code is original work written specifically for this evaluation.
 
 ---
 

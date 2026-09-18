@@ -64,7 +64,7 @@ modules of the course:
 ## Project Structure
 
 ```
-Library-Management-System/
+Library-Management-System-Project/
 ├── README.md
 ├── PROJECT_REPORT.md
 ├── LICENSE
@@ -130,8 +130,8 @@ reports, CSV import and backup:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/shamiquekhan/Library-Management-System.git
-cd Library-Management-System
+git clone https://github.com/shamiquekhan/Library-Management-System-Project.git
+cd Library-Management-System-Project
 ```
 
 ### 2. Build
