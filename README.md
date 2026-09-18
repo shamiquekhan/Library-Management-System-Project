@@ -54,7 +54,7 @@ modules of the course:
 
 - **Project Report (PDF):** `PROJECT_REPORT.pdf` — 10 pages covering all required sections (cover, problem, functional/non-functional requirements, architecture, diagrams, implementation, testing, screenshots/transcript, challenges, learnings, references)
 - **Design Artifacts:** `design/ARCHITECTURE.md`, `CLASS_DIAGRAM.md`, `USE_CASE.md`, `WORKFLOW.md`, `SEQUENCE.md`, `ER_DIAGRAM.md`
-- **Visual Diagrams:** `images/class_diagram.png`, `architecture_diagram.png`, `sequence_diagram.png`
+- **Visual Diagrams:** See [Design Diagrams](#design-diagrams) below
 - **Screenshots / Transcript:** `screenshots/CONSOLE_TRANSCRIPT.md` (verified session outputs)
 - **Tests:** `tests/run_smoke_test.sh` (65 automated assertions), `tests/test_cases.md`, `tests/expected_output.txt`
 - **GUI self-test:** in-process driver that launches the real Swing app, clicks through every page and captures screenshots to `screenshots/gui/`
@@ -96,6 +96,21 @@ Library-Management-System-Project/
     ├── backups/
     └── reports/
 ```
+
+---
+
+## Design Diagrams
+
+The following diagrams illustrate the system architecture and design:
+
+| Diagram | Preview |
+|---------|---------|
+| **System Architecture** | <img src="images/System_Architecture_diagram.png" alt="System Architecture Diagram" width="600"/> |
+| **Class Diagram** | <img src="images/Class_diagram.png" alt="Class Diagram" width="600"/> |
+| **Sequence Diagram — Book Issue** | <img src="images/Sequence_Diagram_Book_Issue.png" alt="Sequence Diagram" width="600"/> |
+| **Use Case Diagram** | <img src="images/Use_Case-diagram.png" alt="Use Case Diagram" width="600"/> |
+| **Workflow Diagram** | <img src="images/workflow.png" alt="Workflow Diagram" width="600"/> |
+| **ER Diagram** | <img src="images/ER%20Diagram.png" alt="ER Diagram" width="600"/> |
 
 ---
 
